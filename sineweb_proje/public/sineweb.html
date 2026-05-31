@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SineWeb - Film Bilgi Sitesi</title>
+<style>
+  /* =========================================================
+     SineWeb - Basit, okunabilir CSS
+     PHP/MySQL'e kolayca uyarlanabilir yapı
+     ========================================================= */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #14141c;          /* Sinema karanlığı */
+    color: #e8e8e8;
+    line-height: 1.5;
+  }
+
+  a { color: #f5c518; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- Header ---------- */
+  header {
+    background-color: #1f1f2b;
+    padding: 15px 30px;
+    border-bottom: 2px solid #f5c518;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    color: #f5c518;
+    font-size: 28px;
+    letter-spacing: 2px;
+  }
+  nav a {
+    margin-left: 20px;
+    color: #e8e8e8;
+    font-weight: bold;
+  }
+  nav a:hover { color: #f5c518; }
+
+  /* ---------- Kullanıcı durumu ---------- */
+  .user-bar {
+    background-color: #2a2a38;
+    padding: 8px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+  .user-bar button {
+    background-color: #f5c518;
+    color: #14141c;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 3px;
+  }
+
+  /* ---------- Layout ---------- */
+  .layout {
+    display: flex;
+    padding: 20px 30px;
+    gap: 20px;
+  }
+  main { flex: 3; }
+  aside { flex: 1; }
+
+  /* ---------- Search ---------- */
+  .search-box {
+    margin-bottom: 20px;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #444;
+    background-color: #1f1f2b;
+    color: #e8e8e8;
+    border-radius: 4px;
+  }
+
+  /* ---------- Film kartları ---------- */
+  .movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  .movie-card {
+    background-color: #1f1f2b;
+    border: 1px solid #2f2f3d;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+  }
+  .movie-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    border-radius: 4px;
+    background-color: #000;
+  }
+  .movie-card h3 {
+    font-size: 16px;
+    margin: 8px 0 4px;
+    color: #f5c518;
+  }
+  .movie-card p {
+    font-size: 13px;
+    color: #bbb;
+    min-height: 60px;
+  }
+  .movie-card button {
+    background-color: #f5c518;
+    color: #14141c;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 3px;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  /* ---------- Aside ---------- */
+  aside .box {
+    background-color: #1f1f2b;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #f5c518;
+  }
+  aside h3 {
+    color: #f5c518;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  aside ul { list-style: none; }
+  aside li { padding: 4px 0; font-size: 14px; }
+
+  /* ---------- Detay sayfası ---------- */
+  .detail {
+    background-color: #1f1f2b;
+    padding: 20px;
+    border-radius: 6px;
+  }
+  .detail h2 { color: #f5c518; margin-bottom: 10px; }
+  .detail .meta { color: #bbb; margin-bottom: 15px; font-size: 14px; }
+  .detail img {
+    max-width: 250px;
+    float: left;
+    margin-right: 20px;
+    border-radius: 4px;
+  }
+
+  /* ---------- Yorumlar ---------- */
+  .comments { margin-top: 25px; clear: both; }
+  .comments h3 { color: #f5c518; margin-bottom: 10px; }
+  .comment {
+    background-color: #2a2a38;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .comment strong { color: #f5c518; }
+  .comment .rating { color: #f5c518; }
+
+  /* ---------- Formlar ---------- */
+  form {
+    background-color: #1f1f2b;
+    padding: 20px;
+    border-radius: 6px;
+    max-width: 500px;
+  }
+  form label { display: block; margin: 10px 0 4px; font-size: 14px; }
+  form input, form textarea, form select {
+    width: 100%;
+    padding: 8px;
+    background-color: #2a2a38;
+    color: #e8e8e8;
+    border: 1px solid #444;
+    border-radius: 3px;
+  }
+  form button {
+    background-color: #f5c518;
+    color: #14141c;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 3px;
+    margin-top: 15px;
+  }
+
+  /* ---------- Tablolar ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #1f1f2b;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #2f2f3d;
+  }
+  th { background-color: #2a2a38; color: #f5c518; }
+
+  /* ---------- Kategori listesi ---------- */
+  .category-list {
+    list-style: none;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .category-list li button {
+    background-color: #2a2a38;
+    color: #e8e8e8;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 20px;
+  }
+  .category-list li button.active {
+    background-color: #f5c518;
+    color: #14141c;
+    font-weight: bold;
+  }
+
+  /* ---------- Admin paneli ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+  .stat-box {
+    background-color: #1f1f2b;
+    padding: 20px;
+    text-align: center;
+    border-radius: 6px;
+    border-top: 3px solid #f5c518;
+  }
+  .stat-box h4 { font-size: 14px; color: #bbb; }
+  .stat-box p { font-size: 32px; color: #f5c518; font-weight: bold; }
+
+  .admin-forms {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+  }
+  .admin-forms form { max-width: none; }
+
+  /* ---------- Görünüm gizleme ---------- */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .message {
+    padding: 12px;
+    background-color: #2a2a38;
+    border-left: 4px solid #f5c518;
+    border-radius: 4px;
+    margin: 10px 0;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-size: 13px;
+    border-top: 1px solid #2a2a38;
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header>
+  <h1>🎬 SineWeb</h1>
+  <nav>
+    <a href="#" onclick="showView('home')">Ana Sayfa</a>
+    <a href="#" onclick="showView('movies')">Filmler</a>
+    <a href="#" onclick="showView('categories')">Kategoriler</a>
+    <a href="#" onclick="showView('watchlist')">İzleme Listesi</a>
+    <a href="#" onclick="showView('about')">Hakkımızda</a>
+    <a href="#" onclick="showView('admin')">Yönetim</a>
+    <a href="#" onclick="showView('login')">Giriş Yap</a>
+    <a href="#" onclick="showView('register')">Kayıt Ol</a>
+  </nav>
+</header>
+
+<!-- ===================== USER BAR ===================== -->
+<div class="user-bar">
+  <span id="userStatus">👤 Ziyaretçi</span>
+  <button onclick="toggleUser()">Kullanıcı Durumu Değiştir</button>
+</div>
+
+<!-- ===================== ANA SAYFA ===================== -->
+<div id="view-home" class="view active">
+  <div class="layout">
+    <main>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Film başlığına göre ara..." oninput="renderMovies()" />
+      </div>
+      <h2 style="color:#f5c518; margin-bottom:15px;">Tüm Filmler</h2>
+      <div class="movie-grid" id="homeMovieGrid"></div>
+    </main>
+    <aside>
+      <div class="box">
+        <h3>🌟 Haftanın Filmi</h3>
+        <p><strong>Yıldızlararası</strong></p>
+        <p style="font-size:13px; color:#bbb;">Christopher Nolan'ın etkileyici bilim kurgu başyapıtı.</p>
+      </div>
+      <div class="box">
+        <h3>💡 Bunları da Sevebilirsiniz</h3>
+        <ul>
+          <li>• Başlangıç</li>
+          <li>• Prestij</li>
+          <li>• Matrix</li>
+          <li>• Bıçak Sırtı 2049</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ===================== FİLMLER ===================== -->
+<div id="view-movies" class="view">
+  <div style="padding:20px 30px;">
+    <h2 style="color:#f5c518; margin-bottom:15px;">Tüm Filmler</h2>
+    <div class="search-box">
+      <input type="text" id="searchInput2" placeholder="🔍 Film ara..." oninput="renderMovies()" />
+    </div>
+    <div class="movie-grid" id="moviesGrid"></div>
+  </div>
+</div>
+
+<!-- ===================== KATEGORİLER ===================== -->
+<div id="view-categories" class="view">
+  <div style="padding:20px 30px;">
+    <h2 style="color:#f5c518; margin-bottom:15px;">Kategoriler</h2>
+    <ul class="category-list" id="categoryList"></ul>
+    <div class="movie-grid" id="categoryMovieGrid"></div>
+  </div>
+</div>
+
+<!-- ===================== FİLM DETAY ===================== -->
+<div id="view-detail" class="view">
+  <div style="padding:20px 30px;">
+    <a href="#" onclick="showView('movies')">← Geri Dön</a>
+    <div class="detail" id="detailContent" style="margin-top:15px;"></div>
+  </div>
+</div>
+
+<!-- ===================== İZLEME LİSTESİ ===================== -->
+<div id="view-watchlist" class="view">
+  <div style="padding:20px 30px;">
+    <h2 style="color:#f5c518; margin-bottom:15px;">İzleme Listem</h2>
+    <div id="watchlistContent"></div>
+  </div>
+</div>
+
+<!-- ===================== HAKKIMIZDA ===================== -->
+<div id="view-about" class="view">
+  <div style="padding:20px 30px; max-width:700px;">
+    <h2 style="color:#f5c518; margin-bottom:15px;">Hakkımızda</h2>
+    <p>SineWeb, film severlerin film bilgilerine kolayca ulaşabileceği, yorum bırakabileceği ve izleme listesi oluşturabileceği basit bir film bilgi sitesidir.</p>
+    <p style="margin-top:10px;">Bu site 6 ana veritabanı tablosu üzerine inşa edilmiştir: User, Movie, Category, Comment, Watchlist ve WatchlistDetails.</p>
+  </div>
+</div>
+
+<!-- ===================== YÖNETİM PANELİ ===================== -->
+<div id="view-admin" class="view">
+  <div style="padding:20px 30px;">
+    <h2 style="color:#f5c518; margin-bottom:20px;">Yönetim Paneli</h2>
+
+    <div class="stats">
+      <div class="stat-box">
+        <h4>Toplam Kategori Sayısı</h4>
+        <p id="statCategories">6</p>
+      </div>
+      <div class="stat-box">
+        <h4>Toplam Film Sayısı</h4>
+        <p id="statMovies">45</p>
+      </div>
+      <div class="stat-box">
+        <h4>Toplam Yorum Sayısı</h4>
+        <p id="statComments">0</p>
+      </div>
+    </div>
+
+    <div class="admin-forms">
+      <form onsubmit="event.preventDefault(); alert('Film eklendi (simülasyon)');">
+        <h3 style="color:#f5c518;">Film Ekle</h3>
+        <label>Başlık</label><input type="text" required />
+        <label>Kategori</label>
+        <select><option>Aksiyon</option><option>Komedi</option><option>Bilim Kurgu</option><option>Drama</option><option>Animasyon</option><option>Gerilim & Korku</option></select>
+        <label>Yayın Yılı</label><input type="number" required />
+        <label>Açıklama</label><textarea rows="3"></textarea>
+        <button type="submit">Ekle</button>
+      </form>
+
+      <form onsubmit="event.preventDefault(); alert('Film güncellendi (simülasyon)');">
+        <h3 style="color:#f5c518;">Film Güncelle</h3>
+        <label>Film ID</label><input type="number" required />
+        <label>Yeni Başlık</label><input type="text" />
+        <label>Yeni Açıklama</label><textarea rows="3"></textarea>
+        <button type="submit">Güncelle</button>
+      </form>
+
+      <form onsubmit="event.preventDefault(); alert('Film silindi (simülasyon)');">
+        <h3 style="color:#f5c518;">Film Sil</h3>
+        <label>Film ID</label><input type="number" required />
+        <button type="submit">Sil</button>
+      </form>
+
+      <form onsubmit="event.preventDefault(); alert('Kategori eklendi (simülasyon)');">
+        <h3 style="color:#f5c518;">Kategori Ekle</h3>
+        <label>Kategori Adı</label><input type="text" required />
+        <button type="submit">Ekle</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== GİRİŞ YAP ===================== -->
+<div id="view-login" class="view">
+  <div style="padding:20px 30px;">
+    <h2 style="color:#f5c518; margin-bottom:15px;">Giriş Yap</h2>
+    <form onsubmit="event.preventDefault(); currentUser = { UserID:1, FirstName:'Ahmet'}; updateUserBar(); alert('Giriş başarılı!'); showView('home');">
+      <label>Email</label>
+      <input type="email" required />
+      <label>Şifre</label>
+      <input type="password" required />
+      <button type="submit">Giriş Yap</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== KAYIT OL ===================== -->
+<div id="view-register" class="view">
+  <div style="padding:20px 30px;">
+    <h2 style="color:#f5c518; margin-bottom:15px;">Kayıt Ol</h2>
+    <form onsubmit="event.preventDefault(); alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.'); showView('login');">
+      <label>Ad (FirstName)</label>
+      <input type="text" required />
+      <label>Soyad (LastName)</label>
+      <input type="text" required />
+      <label>Email</label>
+      <input type="email" required />
+      <label>Şifre (Password)</label>
+      <input type="password" required />
+      <button type="submit">Kayıt Ol</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  &copy; 2026 SineWeb - Tüm hakları saklıdır.
+</footer>
+
+<script>
+/* =========================================================
+   VERİTABANI SİMÜLASYONU
+   (PHP/MySQL'e kolayca dönüştürülebilir basit veri yapısı)
+   ========================================================= */
+
+// Tablo: Category
+const categories = [
+  { CategoryID: 1, Name: "Aksiyon" },
+  { CategoryID: 2, Name: "Komedi" },
+  { CategoryID: 3, Name: "Bilim Kurgu" },
+  { CategoryID: 4, Name: "Drama" },
+  { CategoryID: 5, Name: "Animasyon" },
+  { CategoryID: 6, Name: "Gerilim & Korku" }
+];
+
+// Tablo: Movie
+const movies = [
+  // Aksiyon
+  { MovieID:1,  Title:"Kara Şövalye",            CategoryID:1, ReleaseYear:2008, Description:"Batman, Joker ile Gotham'ı kurtarmak için savaşır." },
+  { MovieID:2,  Title:"Mad Max: Fury Road",       CategoryID:1, ReleaseYear:2015, Description:"Post-apokaliptik dünyada nefes kesen bir kovalamaca." },
+  { MovieID:3,  Title:"John Wick",                CategoryID:1, ReleaseYear:2014, Description:"Emekli suikastçinin intikam yolculuğu." },
+  { MovieID:4,  Title:"Gladyatör",                CategoryID:1, ReleaseYear:2000, Description:"Romalı bir generalin köle olduktan sonraki intikamı." },
+  { MovieID:5,  Title:"Dağ II",                   CategoryID:1, ReleaseYear:2016, Description:"Türk askerlerinin zorlu görev hikayesi." },
+  { MovieID:6,  Title:"Top Gun: Maverick",        CategoryID:1, ReleaseYear:2022, Description:"Maverick yeni pilotlara liderlik ediyor." },
+  { MovieID:7,  Title:"Matrix",                   CategoryID:1, ReleaseYear:1999, Description:"Gerçek nedir? Neo bunu öğrenmek üzere." },
+  // Komedi
+  { MovieID:8,  Title:"Ölümlü Dünya 2",           CategoryID:2, ReleaseYear:2023, Description:"Komik karakterlerin yeni maceraları." },
+  { MovieID:9,  Title:"G.O.R.A.",                 CategoryID:2, ReleaseYear:2004, Description:"Arif'in uzaylılarla maceraları." },
+  { MovieID:10, Title:"Düğün Dernek",             CategoryID:2, ReleaseYear:2013, Description:"Bir düğün hazırlığının komik hikayesi." },
+  { MovieID:11, Title:"Felekten Bir Gece",        CategoryID:2, ReleaseYear:2014, Description:"Unutulmaz bir gecenin komik anları." },
+  { MovieID:12, Title:"Aile Arasında",            CategoryID:2, ReleaseYear:2017, Description:"İki ailenin tanışması ile gelişen komik olaylar." },
+  { MovieID:13, Title:"Yahşi Batı",               CategoryID:2, ReleaseYear:2010, Description:"Vahşi batıda Osmanlı elçileri." },
+  { MovieID:14, Title:"Evde Tek Başına",          CategoryID:2, ReleaseYear:1990, Description:"Küçük Kevin, hırsızlara kurduğu tuzaklar." },
+  { MovieID:15, Title:"Truman Show",              CategoryID:2, ReleaseYear:1998, Description:"Hayatı bir TV şovu olan adam." },
+  // Bilim Kurgu
+  { MovieID:16, Title:"Yıldızlararası",           CategoryID:3, ReleaseYear:2014, Description:"İnsanlığı kurtarmak için uzay yolculuğu." },
+  { MovieID:17, Title:"Başlangıç",                CategoryID:3, ReleaseYear:2010, Description:"Rüyalar içinde rüyalar." },
+  { MovieID:18, Title:"Avatar",                   CategoryID:3, ReleaseYear:2009, Description:"Pandora gezegeninde Na'vi halkıyla yaşam." },
+  { MovieID:19, Title:"Marslı",                   CategoryID:3, ReleaseYear:2015, Description:"Mars'ta mahsur kalan bir astronot." },
+  { MovieID:20, Title:"Dune: Çöl Gezegeni",       CategoryID:3, ReleaseYear:2021, Description:"Arrakis çölünde kaderin izinde." },
+  { MovieID:21, Title:"Bıçak Sırtı 2049",         CategoryID:3, ReleaseYear:2017, Description:"Distopik gelecekte bir replikantın hikayesi." },
+  { MovieID:22, Title:"Prestij",                  CategoryID:3, ReleaseYear:2006, Description:"İki sihirbazın rekabeti." },
+  // Drama
+  { MovieID:23, Title:"Esaretin Bedeli",          CategoryID:4, ReleaseYear:1994, Description:"Umudun en güçlü olduğu yer: Shawshank." },
+  { MovieID:24, Title:"Baba",                     CategoryID:4, ReleaseYear:1972, Description:"Corleone ailesinin destansı hikayesi." },
+  { MovieID:25, Title:"Forrest Gump",             CategoryID:4, ReleaseYear:1994, Description:"Saf ve iyi kalpli bir adamın hayatı." },
+  { MovieID:26, Title:"Yeşil Rehber",             CategoryID:4, ReleaseYear:2018, Description:"Bir piyanist ve şoförünün dostluğu." },
+  { MovieID:27, Title:"Piyanist",                 CategoryID:4, ReleaseYear:2002, Description:"Holokost'tan kurtulan bir piyanistin hikayesi." },
+  { MovieID:28, Title:"Cep Herkülü: Naim Süleymanoğlu", CategoryID:4, ReleaseYear:2019, Description:"Efsane halterci Naim'in hayatı." },
+  { MovieID:29, Title:"Akıl Oyunları",            CategoryID:4, ReleaseYear:2001, Description:"Dahi matematikçi John Nash'in hayatı." },
+  // Animasyon
+  { MovieID:30, Title:"Ters Yüz 2",               CategoryID:5, ReleaseYear:2024, Description:"Riley'nin duyguları büyüyor." },
+  { MovieID:31, Title:"Aslan Kral",               CategoryID:5, ReleaseYear:1994, Description:"Simba'nın kral olma yolculuğu." },
+  { MovieID:32, Title:"Şrek 2",                   CategoryID:5, ReleaseYear:2004, Description:"Şrek ve Fiona'nın yeni maceraları." },
+  { MovieID:33, Title:"Coco",                     CategoryID:5, ReleaseYear:2017, Description:"Müzik ve aile dolu bir Meksika hikayesi." },
+  { MovieID:34, Title:"Moana 2",                  CategoryID:5, ReleaseYear:2024, Description:"Moana yeni bir okyanus yolculuğunda." },
+  { MovieID:35, Title:"Ruhların Kaçışı",          CategoryID:5, ReleaseYear:2001, Description:"Chihiro'nun ruhlar dünyasındaki macerası." },
+  { MovieID:36, Title:"Örümcek-Adam: Örümcek Evreninde", CategoryID:5, ReleaseYear:2018, Description:"Çoklu evrenden örümcek adamlar bir arada." },
+  { MovieID:37, Title:"Kayıp Balık Nemo",         CategoryID:5, ReleaseYear:2003, Description:"Bir babanın oğlunu arama yolculuğu." },
+  // Gerilim & Korku
+  { MovieID:38, Title:"Siccin 7",                 CategoryID:6, ReleaseYear:2024, Description:"Türk korku serisinin son halkası." },
+  { MovieID:39, Title:"Kapan",                    CategoryID:6, ReleaseYear:2024, Description:"Gerilim dolu bir konser gecesi." },
+  { MovieID:40, Title:"Zindan Adası",             CategoryID:6, ReleaseYear:2010, Description:"Akıl hastanesindeki gizemi çözmek." },
+  { MovieID:41, Title:"Sessiz Bir Yer",           CategoryID:6, ReleaseYear:2018, Description:"Ses çıkarmak ölümcül olabilir." },
+  { MovieID:42, Title:"Testere X",                CategoryID:6, ReleaseYear:2023, Description:"Jigsaw geri döndü." },
+  { MovieID:43, Title:"Dabbe: Cin Çarpması",      CategoryID:6, ReleaseYear:2013, Description:"Cinler ve kara büyüler." },
+  { MovieID:44, Title:"Parazit",                  CategoryID:6, ReleaseYear:2019, Description:"Sınıf farkını gözler önüne seren başyapıt." },
+  { MovieID:45, Title:"O",                        CategoryID:6, ReleaseYear:2017, Description:"Palyaço Pennywise'ın korkunç hikayesi." }
+];
+
+// Tablo: User
+const users = [
+  { UserID:1, FirstName:"Ahmet", LastName:"Yılmaz", Email:"ahmet@sineweb.com", Password:"***", TotalNumberOfReviews:3 }
+];
+
+// Tablo: Comment
+const comments = [
+  { CommentID:1, MovieID:1, UserID:1, Text:"Harika bir filmdi, çok beğendim!", Rating:5, Date:"2025-01-15" },
+  { CommentID:2, MovieID:1, UserID:1, Text:"Joker karakteri muhteşem.",        Rating:5, Date:"2025-02-10" },
+  { CommentID:3, MovieID:16, UserID:1, Text:"Bilim kurgu severlerin başyapıtı.", Rating:5, Date:"2025-03-05" },
+  { CommentID:4, MovieID:23, UserID:1, Text:"Hayatımda izlediğim en güzel film.", Rating:5, Date:"2025-03-20" },
+  { CommentID:5, MovieID:7,  UserID:1, Text:"Klasikleşmiş efsane.",             Rating:4, Date:"2025-04-01" }
+];
+
+// Tablo: Watchlist & WatchlistDetails
+const watchlist = [{ WatchlistID:1, UserID:1, Date:"2025-01-01" }];
+let watchlistDetails = [
+  { WatchlistDetailID:1, WatchlistID:1, MovieID:16 },
+  { WatchlistDetailID:2, WatchlistID:1, MovieID:23 }
+];
+
+/* =========================================================
+   DURUM
+   ========================================================= */
+let currentUser = null;           // null = ziyaretçi
+let activeCategoryID = null;
+let nextDetailID = 6;
+
+/* =========================================================
+   YARDIMCI FONKSİYONLAR
+   ========================================================= */
+function posterFor(movie) {
+  // Basit placeholder poster
+  const t = encodeURIComponent(movie.Title);
+  return `https://placehold.co/300x400/1f1f2b/f5c518?text=${t}`;
+}
+function getCategoryName(id){ return categories.find(c => c.CategoryID === id)?.Name || ""; }
+
+/* =========================================================
+   GÖRÜNÜM KONTROLÜ
+   ========================================================= */
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  if (name === "watchlist") renderWatchlist();
+  if (name === "admin") document.getElementById("statComments").textContent = comments.length;
+  window.scrollTo(0, 0);
+}
+
+function toggleUser() {
+  currentUser = currentUser ? null : { UserID:1, FirstName:"Ahmet" };
+  updateUserBar();
+  // Detay sayfası açıksa yenile
+  if (document.getElementById("view-detail").classList.contains("active") && currentDetailMovieID) {
+    showDetail(currentDetailMovieID);
+  }
+}
+function updateUserBar() {
+  document.getElementById("userStatus").textContent =
+    currentUser ? `👤 Giriş Yapmış: ${currentUser.FirstName}` : "👤 Ziyaretçi";
+}
+
+/* =========================================================
+   FİLM LİSTELEME
+   ========================================================= */
+function renderMovies() {
+  const q1 = document.getElementById("searchInput").value.toLowerCase();
+  const q2 = document.getElementById("searchInput2").value.toLowerCase();
+
+  const filteredHome = movies.filter(m => m.Title.toLowerCase().includes(q1));
+  const filteredAll  = movies.filter(m => m.Title.toLowerCase().includes(q2));
+
+  document.getElementById("homeMovieGrid").innerHTML  = movieCards(filteredHome);
+  document.getElementById("moviesGrid").innerHTML     = movieCards(filteredAll);
+}
+function movieCards(list) {
+  if (list.length === 0) return "<p>Film bulunamadı.</p>";
+  return list.map(m => `
+    <div class="movie-card">
+      <img src="${posterFor(m)}" alt="${m.Title}" />
+      <h3>${m.Title}</h3>
+      <p>${m.Description}</p>
+      <small style="color:#bbb;">Yıl: ${m.ReleaseYear}</small>
+      <button onclick="showDetail(${m.MovieID})">Detayları Gör</button>
+    </div>
+  `).join("");
+}
+
+/* =========================================================
+   KATEGORİLER
+   ========================================================= */
+function renderCategories() {
+  const list = document.getElementById("categoryList");
+  list.innerHTML = `<li><button class="${activeCategoryID===null?'active':''}" onclick="filterByCategory(null)">Tümü</button></li>` +
+    categories.map(c => `
+      <li><button class="${activeCategoryID===c.CategoryID?'active':''}" onclick="filterByCategory(${c.CategoryID})">${c.Name}</button></li>
+    `).join("");
+
+  const filtered = activeCategoryID === null
+    ? movies
+    : movies.filter(m => m.CategoryID === activeCategoryID);
+
+  document.getElementById("categoryMovieGrid").innerHTML = movieCards(filtered);
+}
+function filterByCategory(id) {
+  activeCategoryID = id;
+  renderCategories();
+}
+
+/* =========================================================
+   FİLM DETAY
+   ========================================================= */
+let currentDetailMovieID = null;
+function showDetail(movieID) {
+  currentDetailMovieID = movieID;
+  const m = movies.find(x => x.MovieID === movieID);
+  if (!m) return;
+
+  const movieComments = comments.filter(c => c.MovieID === movieID);
+  const commentsHTML = movieComments.length === 0
+    ? "<p>Henüz yorum yapılmamış.</p>"
+    : movieComments.map(c => {
+        const u = users.find(u => u.UserID === c.UserID);
+        return `<div class="comment">
+          <strong>${u ? u.FirstName : "Kullanıcı"}</strong>
+          <span class="rating"> ★ ${c.Rating}/5</span>
+          <span style="float:right; color:#999;">${c.Date}</span>
+          <p>${c.Text}</p>
+        </div>`;
+      }).join("");
+
+  const commentForm = currentUser
+    ? `<form onsubmit="addComment(event, ${movieID})">
+        <label>Adınız</label>
+        <input type="text" value="${currentUser.FirstName}" readonly />
+        <label>Yorumunuz</label>
+        <textarea name="text" rows="3" required></textarea>
+        <label>Puan (1-5)</label>
+        <input type="number" name="rating" min="1" max="5" required />
+        <button type="submit">Yorum Yap</button>
+      </form>`
+    : `<div class="message">Yorum yapmak için lütfen giriş yapın.</div>`;
+
+  const watchlistBtn = currentUser
+    ? `<button onclick="addToWatchlist(${movieID})" style="background-color:#f5c518; color:#14141c; border:none; padding:10px 20px; cursor:pointer; font-weight:bold; border-radius:3px; margin-top:10px;">+ İzleme Listeme Ekle</button>`
+    : "";
+
+  document.getElementById("detailContent").innerHTML = `
+    <img src="${posterFor(m)}" alt="${m.Title}" />
+    <h2>${m.Title}</h2>
+    <div class="meta">
+      <strong>Kategori:</strong> ${getCategoryName(m.CategoryID)} &nbsp;|&nbsp;
+      <strong>Yıl:</strong> ${m.ReleaseYear}
+    </div>
+    <p>${m.Description}</p>
+    ${watchlistBtn}
+    <div class="comments">
+      <h3>Yorumlar (${movieComments.length})</h3>
+      ${commentForm}
+      <div style="margin-top:15px;">${commentsHTML}</div>
+    </div>
+  `;
+
+  showView("detail");
+}
+
+function addComment(e, movieID) {
+  e.preventDefault();
+  const form = e.target;
+  comments.push({
+    CommentID: comments.length + 1,
+    MovieID: movieID,
+    UserID: currentUser.UserID,
+    Text: form.text.value,
+    Rating: parseInt(form.rating.value),
+    Date: new Date().toISOString().slice(0,10)
+  });
+  showDetail(movieID);
+}
+
+/* =========================================================
+   İZLEME LİSTESİ
+   ========================================================= */
+function addToWatchlist(movieID) {
+  if (!currentUser) return;
+  const exists = watchlistDetails.find(w => w.MovieID === movieID);
+  if (exists) { alert("Bu film zaten izleme listenizde."); return; }
+  watchlistDetails.push({
+    WatchlistDetailID: nextDetailID++,
+    WatchlistID: 1,
+    MovieID: movieID
+  });
+  alert("Film izleme listenize eklendi!");
+}
+function removeFromWatchlist(detailID) {
+  watchlistDetails = watchlistDetails.filter(w => w.WatchlistDetailID !== detailID);
+  renderWatchlist();
+}
+function renderWatchlist() {
+  const container = document.getElementById("watchlistContent");
+  if (!currentUser) {
+    container.innerHTML = `<div class="message">İzleme listesini görmek için lütfen giriş yapın.</div>`;
+    return;
+  }
+  if (watchlistDetails.length === 0) {
+    container.innerHTML = "<p>İzleme listeniz boş.</p>";
+    return;
+  }
+  const rows = watchlistDetails.map(w => {
+    const m = movies.find(x => x.MovieID === w.MovieID);
+    return `<tr>
+      <td>${w.WatchlistDetailID}</td>
+      <td>${m.Title}</td>
+      <td>${m.ReleaseYear}</td>
+      <td>${getCategoryName(m.CategoryID)}</td>
+      <td><button onclick="showDetail(${m.MovieID})">Detay</button>
+          <button onclick="removeFromWatchlist(${w.WatchlistDetailID})">Sil</button></td>
+    </tr>`;
+  }).join("");
+  container.innerHTML = `
+    <table>
+      <thead><tr><th>#</th><th>Film</th><th>Yıl</th><th>Kategori</th><th>İşlem</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+/* =========================================================
+   BAŞLAT
+   ========================================================= */
+renderMovies();
+renderCategories();
+updateUserBar();
+</script>
+</body>
+</html>
